@@ -1,0 +1,44 @@
+# ── Python / Backend ──────────────────────────────────
+backend/venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+
+# Environment variables — NEVER commit these (contain passwords & secret keys)
+backend/.env
+.env
+.env.local
+.env.production
+
+# ── Node / Frontend ───────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# ── OS files ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editor ────────────────────────────────────────────
+.idea/
+.vscode/settings.json
+*.suo
+*.user
+
+# ── Logs ─────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── Claude Code internal ─────────────────────────────
+.claude/
