@@ -1,0 +1,103 @@
+================================================================
+  IAPAS — Installation & Setup Guide
+  Intelligent Academic Process Automation System
+================================================================
+
+You do NOT need to install Python, Node.js, or MySQL separately.
+Docker handles everything automatically.
+
+----------------------------------------------------------------
+STEP 1: Install Docker
+----------------------------------------------------------------
+Windows / Mac:
+  Download and install Docker Desktop from:
+  https://www.docker.com/products/docker-desktop
+
+Linux:
+  Follow the official Docker Engine installation guide at:
+  https://docs.docker.com/engine/install/
+
+Verify it worked:
+  Open your Terminal (or Command Prompt) and run:
+    docker --version
+  You should see a version number (e.g. Docker version 24.x.x).
+
+----------------------------------------------------------------
+STEP 2: Get the Project Files
+----------------------------------------------------------------
+  Unzip the iapas-project.zip folder you received.
+  Open your Terminal (or PowerShell) and navigate into it:
+
+    cd path\to\your\unzipped\folder
+
+  Example (Windows):
+    cd C:\Users\YourName\Downloads\iapas-project
+
+----------------------------------------------------------------
+STEP 3: Launch the Application
+----------------------------------------------------------------
+  Run this single command:
+
+    docker-compose up --build
+
+  What happens automatically:
+    - MySQL 8 database is created
+    - Python backend (FastAPI) is installed and started
+    - React frontend is built and served
+
+  NOTE: The FIRST time you run this, it will download ~1 GB of
+  Docker images. This takes 3–10 minutes depending on your
+  internet speed. Subsequent starts take under 30 seconds.
+
+  The system is ready when you see a line like:
+    backend  | INFO:     Application startup complete.
+
+----------------------------------------------------------------
+STEP 4: Access the Application
+----------------------------------------------------------------
+  Open your web browser and go to:
+
+    Website:          http://localhost:5173
+    API / Docs:       http://localhost:8000/docs
+
+  Both links must be accessed from the SAME computer running
+  Docker — they will not work on other devices on the network.
+
+----------------------------------------------------------------
+STEP 5: Stop the Application
+----------------------------------------------------------------
+  To stop the servers, press Ctrl + C in the terminal.
+
+  To stop AND remove all containers (clean shutdown):
+    docker-compose down
+
+  Your database data is preserved in a Docker volume and will
+  be available the next time you run docker-compose up.
+
+  To wipe all data and start completely fresh:
+    docker-compose down -v
+
+----------------------------------------------------------------
+TROUBLESHOOTING
+----------------------------------------------------------------
+Problem: Port 8000 or 5173 is already in use
+  Fix: Close any other applications using those ports, or
+       restart your computer and try again.
+
+Problem: "Cannot connect to Docker daemon"
+  Fix: Make sure Docker Desktop is running (check your system
+       tray / taskbar for the Docker whale icon).
+
+Problem: Website loads but shows connection errors
+  Fix: Wait 30 more seconds — the database may still be
+       initializing. Then refresh the page.
+
+Problem: docker-compose command not found
+  Fix: Try "docker compose" (with a space) instead of
+       "docker-compose" (with a hyphen).
+
+----------------------------------------------------------------
+Need Help?
+  Contact the developer with a screenshot of the terminal
+  output showing the error message.
+================================================================
