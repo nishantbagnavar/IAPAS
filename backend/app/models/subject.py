@@ -18,3 +18,4 @@ class Subject(Base):
     attendance_records = relationship("Attendance", back_populates="subject", cascade="all, delete-orphan")
     marks_records = relationship("Marks", back_populates="subject", cascade="all, delete-orphan")
     performance_insights = relationship("PerformanceInsight", back_populates="subject", cascade="all, delete-orphan")
+    assigned_faculty = relationship("FacultySubject", back_populates="subject", cascade="all, delete-orphan")

@@ -22,6 +22,7 @@ import StudentAnalytics from './pages/faculty/StudentAnalytics'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
+import AdminSubjects from './pages/admin/AdminSubjects'
 import AdminReports from './pages/admin/AdminReports'
 
 const ROLE_HOME = {
@@ -86,6 +87,7 @@ export default function App() {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="users"     element={<AdminUsers />} />
+        <Route path="subjects"  element={<AdminSubjects />} />
         <Route path="reports"   element={<AdminReports />} />
       </Route>
 

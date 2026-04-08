@@ -1,11 +1,12 @@
 import { Outlet } from 'react-router-dom'
 import Sidebar from '../../components/Sidebar'
 import Footer from '../../components/Footer'
-import { LayoutDashboard, Users, FileBarChart } from 'lucide-react'
+import { LayoutDashboard, Users, FileBarChart, BookOpen } from 'lucide-react'
 
 const NAV = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/admin/users',     icon: Users,           label: 'Users' },
+  { to: '/admin/subjects',  icon: BookOpen,        label: 'Subjects' },
   { to: '/admin/reports',   icon: FileBarChart,    label: 'Reports' },
 ]
 

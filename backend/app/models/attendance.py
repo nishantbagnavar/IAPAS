@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, Date, Enum
+from sqlalchemy import Column, Integer, ForeignKey, Date, Enum, UniqueConstraint
 from sqlalchemy.orm import relationship
 import enum
 
@@ -19,6 +19,8 @@ class Attendance(Base):
     subject_id = Column(Integer, ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False, index=True)
     date = Column(Date, nullable=False)
     status = Column(Enum(AttendanceStatus), nullable=False, default=AttendanceStatus.present)
+
+    __table_args__ = (UniqueConstraint("student_id", "subject_id", "date", name="uq_attendance_student_subject_date"),)
 
     # Relationships
     student = relationship("Student", back_populates="attendance_records")

@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
@@ -61,6 +62,11 @@ def create_user(req: AdminCreateUserRequest, db: Session) -> UserDetailResponse:
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="roll_number is required for student role",
             )
+        if db.query(Student).filter(Student.roll_number == req.roll_number).first():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Roll number '{req.roll_number}' is already registered",
+            )
         profile = Student(
             user_id=user.id,
             roll_number=req.roll_number,
@@ -84,7 +90,14 @@ def create_user(req: AdminCreateUserRequest, db: Session) -> UserDetailResponse:
         detail.department = profile.department
         detail.subject_specialization = profile.subject_specialization
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A database conflict occurred. Check for duplicate values.",
+        )
     return detail
 
 

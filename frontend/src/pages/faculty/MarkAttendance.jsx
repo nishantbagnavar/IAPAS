@@ -16,24 +16,56 @@ export default function MarkAttendance() {
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [loadingExisting, setLoadingExisting] = useState(false)
 
   const today = new Date().toISOString().split('T')[0]
   const [selectedSubject, setSelectedSubject] = useState('')
   const [date, setDate] = useState(today)
   const [attendance, setAttendance] = useState({}) // { student_id: status }
 
+  // Load subjects and students once
   useEffect(() => {
-    Promise.all([api.get('/api/subjects'), api.get('/api/students')])
+    Promise.all([api.get('/api/faculty/me/subjects'), api.get('/api/students')])
       .then(([s, st]) => {
         setSubjects(s.data)
         setStudents(st.data)
-        // Default all present
-        const defaults = {}
-        st.data.forEach(s => { defaults[s.student_id] = 'present' })
-        setAttendance(defaults)
       })
       .finally(() => setLoading(false))
   }, [])
+
+  // Whenever subject or date changes, fetch existing saved attendance and pre-fill
+  useEffect(() => {
+    if (!selectedSubject || students.length === 0) {
+      // Reset to default (present) when no subject selected
+      const defaults = {}
+      students.forEach(s => { defaults[s.student_id] = 'present' })
+      setAttendance(defaults)
+      return
+    }
+
+    setLoadingExisting(true)
+    api.get(`/api/attendance/subject/${selectedSubject}`)
+      .then(({ data }) => {
+        // Filter records for the selected date
+        const recordsForDate = data.filter(r => r.date === date)
+        const savedMap = {}
+        recordsForDate.forEach(r => { savedMap[r.student_id] = r.status })
+
+        // Pre-fill: use saved status if exists, else default to 'present'
+        const merged = {}
+        students.forEach(s => {
+          merged[s.student_id] = savedMap[s.student_id] || 'present'
+        })
+        setAttendance(merged)
+      })
+      .catch(() => {
+        // On error, just default everyone to present
+        const defaults = {}
+        students.forEach(s => { defaults[s.student_id] = 'present' })
+        setAttendance(defaults)
+      })
+      .finally(() => setLoadingExisting(false))
+  }, [selectedSubject, date, students])
 
   const markAll = (status) => {
     const upd = {}
@@ -86,7 +118,9 @@ export default function MarkAttendance() {
               onChange={e => setSelectedSubject(e.target.value)}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
             >
-              <option value="">Select a subject…</option>
+              <option value="">
+                {subjects.length === 0 ? 'No subjects assigned — contact admin' : 'Select a subject…'}
+              </option>
               {subjects.map(s => (
                 <option key={s.id} value={s.id}>{s.name} ({s.code})</option>
               ))}
@@ -132,6 +166,12 @@ export default function MarkAttendance() {
         <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
           <ClipboardCheck className="w-4 h-4 text-indigo-600" />
           <h2 className="font-semibold text-gray-900 text-sm">{students.length} Students</h2>
+          {loadingExisting && (
+            <span className="ml-auto text-xs text-indigo-500 flex items-center gap-1.5">
+              <span className="w-3 h-3 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin" />
+              Loading saved attendance…
+            </span>
+          )}
         </div>
         <div className="divide-y divide-gray-50">
           {students.map((s) => (

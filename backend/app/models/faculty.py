@@ -14,3 +14,4 @@ class Faculty(Base):
 
     # Relationships
     user = relationship("User", back_populates="faculty_profile")
+    assigned_subjects = relationship("FacultySubject", back_populates="faculty", cascade="all, delete-orphan")

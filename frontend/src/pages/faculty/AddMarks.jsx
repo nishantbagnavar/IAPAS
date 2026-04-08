@@ -23,7 +23,7 @@ export default function AddMarks() {
   })
 
   useEffect(() => {
-    Promise.all([api.get('/api/subjects'), api.get('/api/students')])
+    Promise.all([api.get('/api/faculty/me/subjects'), api.get('/api/students')])
       .then(([s, st]) => { setSubjects(s.data); setStudents(st.data) })
       .finally(() => setLoading(false))
   }, [])
@@ -85,7 +85,9 @@ export default function AddMarks() {
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Subject</label>
             <select value={form.subject_id} onChange={e => setForm(f => ({ ...f, subject_id: e.target.value }))}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-              <option value="">Select subject…</option>
+              <option value="">
+                {subjects.length === 0 ? 'No subjects assigned — contact admin' : 'Select subject…'}
+              </option>
               {subjects.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
             </select>
           </div>
