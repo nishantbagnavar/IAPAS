@@ -190,14 +190,14 @@ for st_idx, student in enumerate(students):
                 status = AttendanceStatus.late
             else:
                 status = AttendanceStatus.absent
-            attendance_rows.append(Attendance(
-                student_id=student.id,
-                subject_id=subject.id,
-                date=day,
-                status=status,
-            ))
+            attendance_rows.append({
+                "student_id": student.id,
+                "subject_id": subject.id,
+                "date": day,
+                "status": status,
+            })
 
-db.bulk_save_objects(attendance_rows)
+db.bulk_insert_mappings(Attendance, attendance_rows)
 db.flush()
 print(f"Inserted {len(attendance_rows)} attendance records.")
 
@@ -234,16 +234,16 @@ for st_idx, student in enumerate(students):
         for exam_type, max_marks, _ in EXAM_CONFIGS:
             pct = min(1.0, max(0.20, random.gauss(mean_pct, std)))
             obtained = round(pct * max_marks, 1)
-            marks_rows.append(Marks(
-                student_id=student.id,
-                subject_id=subject.id,
-                exam_type=exam_type,
-                marks_obtained=obtained,
-                max_marks=max_marks,
-                recorded_at=recorded_base + timedelta(hours=random.randint(0, 240)),
-            ))
+            marks_rows.append({
+                "student_id": student.id,
+                "subject_id": subject.id,
+                "exam_type": exam_type,
+                "marks_obtained": obtained,
+                "max_marks": max_marks,
+                "recorded_at": recorded_base + timedelta(hours=random.randint(0, 240)),
+            })
 
-db.bulk_save_objects(marks_rows)
+db.bulk_insert_mappings(Marks, marks_rows)
 db.flush()
 print(f"Inserted {len(marks_rows)} marks records.")
 
@@ -271,38 +271,38 @@ SUGGESTIONS = {
     "F":  "Urgent: meet with faculty advisor. Consider remedial coursework and tutoring support.",
 }
 
-def compute_avg_pct(student_id: int, subject_id: int) -> float:
-    rows = [
-        m for m in marks_rows
-        if m.student_id == student_id and m.subject_id == subject_id
-    ]
-    if not rows:
-        return 0.0
-    total_obtained = sum(m.marks_obtained for m in rows)
-    total_max = sum(m.max_marks for m in rows)
-    return total_obtained / total_max if total_max else 0.0
-
 def grade_from_pct(pct: float) -> str:
     for threshold, g in GRADE_THRESHOLDS:
         if pct >= threshold:
             return g
     return "F"
 
+# Build a lookup dict from marks_rows (now plain dicts) for fast access
+from collections import defaultdict
+marks_lookup = defaultdict(lambda: {"obtained": 0.0, "max": 0.0})
+for m in marks_rows:
+    key = (m["student_id"], m["subject_id"])
+    marks_lookup[key]["obtained"] += m["marks_obtained"]
+    marks_lookup[key]["max"] += m["max_marks"]
+
+now = datetime.now()
 insight_rows = []
 for student in students:
     for subject in subjects:
-        avg = compute_avg_pct(student.id, subject.id)
-        grade = grade_from_pct(avg)
-        insight_rows.append(PerformanceInsight(
-            student_id=student.id,
-            subject_id=subject.id,
-            predicted_grade=grade,
-            learning_gap=LEARNING_GAPS[grade],
-            suggestion=SUGGESTIONS[grade],
-            generated_at=datetime.now(),
-        ))
+        key = (student.id, subject.id)
+        totals = marks_lookup[key]
+        avg = totals["obtained"] / totals["max"] if totals["max"] else 0.0
+        grade = grade_from_pct(avg * 100)
+        insight_rows.append({
+            "student_id": student.id,
+            "subject_id": subject.id,
+            "predicted_grade": grade,
+            "learning_gap": LEARNING_GAPS[grade],
+            "suggestion": SUGGESTIONS[grade],
+            "generated_at": now,
+        })
 
-db.bulk_save_objects(insight_rows)
+db.bulk_insert_mappings(PerformanceInsight, insight_rows)
 db.commit()
 print(f"Inserted {len(insight_rows)} performance insights.")
 

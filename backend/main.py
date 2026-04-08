@@ -4,10 +4,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from sqlalchemy import text
 from app.db.database import engine, Base
 import app.models  # noqa: F401 — registers all ORM models with Base
 
-Base.metadata.create_all(bind=engine)
+with engine.connect() as _con:
+    _con.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
+    Base.metadata.create_all(bind=_con)
+    _con.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
+    _con.commit()
 
 from app.api.routes import (
     auth_router,
